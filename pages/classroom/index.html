@@ -1,0 +1,183 @@
+<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lớp học · Trạm Toán 6</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172746;font:16px/1.55 system-ui,sans-serif}main{max-width:880px;margin:auto;padding:24px}header,section{background:white;border:1px solid #dce4f2;border-radius:18px;padding:22px;margin-bottom:15px}header{background:#182e83;color:white}header a{color:#a7f1d4}h1,h2,h3{margin:.3em 0}form{display:grid;gap:8px;margin:14px 0}input,select,textarea,button{font:inherit;padding:9px;border:1px solid #abb9d1;border-radius:8px}button{background:#294cce;color:white;border:none;cursor:pointer;width:fit-content}button:disabled{opacity:.5}fieldset{margin:12px 0;border:1px solid #dce4f2;border-radius:8px}fieldset label{display:block;padding:5px}a{color:#294cce}p{overflow-wrap:anywhere}.muted{color:#4c5974}
+fieldset img{display:block;max-width:100%;max-height:70vh;object-fit:contain}.question-nav{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.question-nav button{background:#e8eefb;color:#263d71;min-width:38px}.question-nav button.done{background:#197150;color:white}fieldset{scroll-margin-top:12px}textarea{max-width:100%;width:100%}details summary{cursor:pointer;font-weight:700}</style>
+<main><header><a href="/">← Trạm Toán 6</a><h1>Lớp học Toán 6</h1><div id="identity"></div></header><section id="notice" role="status">Đang tải lớp học…</section><div id="app"></div></main>
+<script>
+const get=id=>document.getElementById(id);
+const app=get('app'), notice=get('notice');
+let state, student;
+const make=(tag,value)=>{const el=document.createElement(tag);if(value!==undefined)el.textContent=value;return el};
+function link(label,url){const el=make('a',label);el.href=url;return el}
+async function api(path='',data){
+ const res=await fetch('/api/class'+path,data===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+ const json=await res.json();
+ if(!res.ok){const error=new Error(json.error);error.status=res.status;throw error}
+ return json;
+}
+function section(title){const el=make('section');el.append(make('h2',title));app.append(el);return el}
+function field(form,label,el){const wrap=make('label',label+' ');wrap.append(el);form.append(wrap);return el}
+function input(type){const el=make('input');el.type=type;el.required=true;return el}
+function select(values){const el=make('select');values.forEach(([key,name])=>{const option=make('option',name);option.value=key;el.append(option)});return el}
+function button(label,action){const el=make('button',label);el.type='button';el.onclick=()=>run(el,action);return el}
+async function run(el,action){el.disabled=true;notice.textContent='';try{await action()}catch(error){notice.textContent=error.message||'Có lỗi khi kết nối.'}finally{el.disabled=false}}
+function formIn(parent,label,action){
+ const form=make('form'), submit=make('button',label);
+ submit.type='submit';parent.append(form);
+ form.onsubmit=event=>{event.preventDefault();run(submit,action)};
+ return {form,submit};
+}
+function topics(){return select(state.topics.map((title,i)=>[i,title]))}
+function timestamp(value){return new Date(value.replace(' ','T')+'Z').toLocaleString('vi-VN',{timeZone:'Asia/Bangkok'})}
+async function render(){
+ const isTeacher=state.user.teacher;
+ if(isTeacher&&!state.students.some(s=>s.email===student))student=state.students[0]?.email;
+ const records=(!isTeacher||student)?await api('/records'+(isTeacher?'?student='+encodeURIComponent(student):'')):null;
+ app.replaceChildren();
+ if(isTeacher){
+   const box=section('Quản lý học sinh');box.id='registrations';
+   const {form,submit}=formIn(box,'Thêm hoặc cập nhật học sinh',async()=>{
+     await api('/student',{student:email.value,name:name.value});student=email.value.trim().toLowerCase();state=await api();await render();
+   });
+   const name=field(form,'Họ tên',input('text')),email=field(form,'Email Google',input('email'));
+   name.maxLength=80;email.maxLength=254;form.append(submit);
+   const applicants=state.students.filter(s=>s.pending);
+   if(applicants.length){
+     box.append(make('h3','Đăng ký chờ duyệt'));
+     for(const applicant of applicants){
+       const item=make('p',applicant.name+' · '+applicant.email+(applicant.phone?' · '+applicant.phone:''));
+       item.append(' ',button('Chấp nhận',async()=>{
+         await api('/access',{student:applicant.email,active:true});student=applicant.email;state=await api();await render();
+       }));
+       box.append(item);
+     }
+   }
+   if(!student){await renderOnline();return}
+   const picker=select(state.students.map(s=>[s.email,s.name+' · '+s.email+(s.active?'':s.pending?' · Chờ duyệt':' · Đã khóa')]));
+   picker.value=student;picker.onchange=()=>run(picker,async()=>{student=picker.value;await render()});
+   field(box,'Hồ sơ đang xem',picker);
+   const profile=state.students.find(s=>s.email===student);
+   const {active,pending,phone}=profile;
+   if(phone)box.append(make('p','Số điện thoại: '+phone));
+   if(pending)box.append(make('p','Đăng ký chờ duyệt'));
+   box.append(button(active?'Khóa quyền vào lớp':pending?'Chấp nhận':'Mở lại quyền vào lớp',async()=>{
+     await api('/access',{student,active:!active});state=await api();await render();
+   }));
+   const assign=section('Giao đề');
+   const assignment=formIn(assign,'Giao cho học sinh đang chọn',async()=>{
+     await api('/assignment',{student,title:title.value,topic:Number(topic.value)});await render();
+   });
+   const title=field(assignment.form,'Tên bài',input('text')),topic=field(assignment.form,'Chủ đề',topics());
+   title.maxLength=120;assignment.form.append(assignment.submit);
+ }else{
+   const practice=section('Tự luyện có lưu điểm');
+   const topic=topics();field(practice,'Chọn chủ đề',topic);
+   practice.append(button('Làm bài',()=>startQuiz(Number(topic.value))));
+ }
+ await renderOnline();
+ const assignments=section('Đề được giao');assignments.id='assignments';
+ if(!records.assignments.length)assignments.append(make('p','Chưa có đề được giao.'));
+ for(const row of records.assignments){
+   const item=make('p',row.title+' · '+state.topics[row.topic]+' · '+(row.score===null?'Chưa nộp':row.score+'/'+row.total));
+   if(!isTeacher&&row.score===null)item.append(' ',button('Làm đề',()=>startQuiz(row.topic,row.id)));
+   assignments.append(item);
+ }
+ if(isTeacher){
+   const insights=await api('/insights?student='+encodeURIComponent(student));
+   const tracking=section('Theo dõi học sinh');
+   const weaknesses=insights.topics.filter(row=>row.correct<row.total);
+   if(!weaknesses.length)tracking.append(make('p',insights.topics.length?'Chưa thấy lỗi trong các bài đã chấm.':'Chưa có bài đã chấm để nhận xét.'));
+   for(const row of weaknesses)tracking.append(make('p',row.topic+' · đúng '+row.correct+'/'+row.total+' câu · '+(row.total<3?'Cần thêm bài để đánh giá':'Nên luyện thêm')));
+   for(const row of insights.selfPractice){
+     const item=make('p','Đề ToanMath tự luyện · '+(row.total?row.score+'/'+row.total:'Chưa chấm được')+' · '+timestamp(row.created)+(row.misses.length?' · Cần ôn: '+row.misses.join(', '):''));
+     item.append(' ',link('Mở nguồn đề','https://thcs.toanmath.com'+row.path));tracking.append(item);
+   }
+   for(const row of insights.assignments)tracking.append(make('p',row.title+' · '+row.score+'/'+row.total+(row.pending?' · Chờ chấm ảnh':'')+(row.misses.length?' · Cần ôn: '+row.misses.join(', '):'')));
+ }
+ const scores=section('Lịch sử điểm');scores.id='scores';
+ if(!records.scores.length)scores.append(make('p','Chưa có bài đã chấm.'));
+ for(const row of records.scores)scores.append(make('p',state.topics[row.topic]+' · '+row.score+'/'+row.total+' · '+timestamp(row.created)));
+ const messages=section('Nhận xét và tin nhắn riêng');messages.id='messages';
+ const chat=formIn(messages,'Gửi',async()=>{await api('/message',{student,message:message.value});await render()});
+ const message=field(chat.form,'Lời nhắn',make('textarea'));
+ message.required=true;message.maxLength=2000;chat.form.append(chat.submit);
+ if(!records.messages.length)messages.append(make('p','Chưa có lời nhắn.'));
+ for(const row of records.messages){
+   const item=make('article');item.append(make('strong',(row.role==='teacher'?'Giáo viên':'Học sinh')+' · '+timestamp(row.created)),make('p',row.body));messages.append(item);
+ }
+}
+async function startQuiz(topic,assignment){
+ const {questions}=await api('/questions?'+(assignment?'assignment='+encodeURIComponent(assignment):'topic='+topic));
+ app.replaceChildren();
+ const panel=section(state.topics[topic]);
+ panel.append(button('← Về lớp học',render));
+ const {form,submit}=formIn(panel,'Nộp bài',async()=>{
+   const data=new FormData(form);
+   const result=await api('/submit',{topic,assignment,answers:questions.map((_,i)=>data.get('q'+i))});
+   form.remove();panel.append(make('h3','Điểm '+result.score+'/'+result.total));
+   result.review.forEach((row,i)=>panel.append(make('p',(i+1)+'. '+row.answer+' · '+row.solution)));
+ });
+ questions.forEach((q,i)=>{
+   const group=make('fieldset');group.append(make('legend',(i+1)+'. '+q.prompt));
+   q.options.forEach(option=>{const choice=input('radio');choice.name='q'+i;choice.value=option;field(group,option,choice)});
+   form.append(group);
+ });
+ form.append(submit);panel.scrollIntoView();
+}
+async function registration(){
+ const {email,profile}=await api('/registration');
+ app.replaceChildren();notice.textContent='';
+ const box=section('Đăng ký học sinh');
+ box.append(link('← Đăng nhập lớp học','/lop-hoc'));
+ if(profile){
+   box.append(make('p',profile.active?'Tài khoản của bạn đã vào lớp.':profile.pending?'Đã gửi đăng ký. Vui lòng chờ giáo viên duyệt.':'Quyền vào lớp đang bị khóa. Hãy liên hệ giáo viên.'));
+   return;
+ }
+ const {form,submit}=formIn(box,'Gửi đăng ký',async()=>{
+   await api('/registration',{name:name.value,phone:phone.value});
+   await registration();
+ });
+ const name=field(form,'Họ tên học sinh',input('text'));
+ name.maxLength=80;name.autocomplete='name';
+ const emailField=field(form,'Email Google',input('email'));
+ emailField.value=email;emailField.readOnly=true;
+ const phone=field(form,'Số điện thoại',input('tel'));
+ phone.autocomplete='tel';phone.maxLength=24;
+ form.append(submit);
+}
+function scrollToSection(){
+ document.getElementById(location.hash.slice(1))?.scrollIntoView();
+}
+window.addEventListener('hashchange',async()=>{
+ if(state&&!document.getElementById('messages'))await render();
+ scrollToSection();
+});
+const registering=new URLSearchParams(location.search).get('mode')==='register';
+
+(async()=>{
+ try{
+   const {user}=await api('/session');
+   get('identity').append((user.teacher?'Giáo viên':'Tài khoản đang dùng')+' · '+user.email+' · ',link('Đổi tài khoản','/auth/logout?return_to=%2Flop-hoc'));
+   if(registering&&user.teacher){location.replace('/lop-hoc#registrations');return}
+   if(registering){await registration();return}
+   state=await api();
+
+   notice.textContent='';
+   const original=new URLSearchParams(location.search).get('original');
+   if(original&&!state.user.teacher){await startOriginal(original);return}
+   await render();scrollToSection();
+ }catch(error){
+   notice.textContent=error.message||'Chưa mở được lớp học.';
+   if(error.status===401)notice.append(' ',link('Mở trang đăng nhập',registering?'/dang-nhap?mode=register':'/dang-nhap'));
+   if(error.status===403&&!registering)notice.append(' ',link('Đăng ký học sinh','/lop-hoc?mode=register'));
+ }
+})();
+</script></html>
+
+
+
+
+
+
+
+

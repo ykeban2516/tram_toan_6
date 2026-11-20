@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Trạm Toán 6 · Ôn tập THCS</title><script src="./config.js"></script><script>const backend=(window.TRAM_TOAN_CONFIG?.apiBase||"").replaceAll(String.fromCharCode(92),"");const originalFetch=window.fetch.bind(window);window.fetch=(input,options)=>{if(typeof input==="string"&&input.startsWith("/api/")){if(!backend)return Promise.resolve(new Response(JSON.stringify({error:"Chưa cấu hình máy chủ API trong config.js."}),{status:503,headers:{"Content-Type":"application/json"}}));input=backend+input;options={...options,credentials:"include"}}return originalFetch(input,options)};document.addEventListener("DOMContentLoaded",()=>{for(const a of document.querySelectorAll("a")){const href=a.getAttribute("href")||"";if(href.startsWith("/auth/")){if(backend)a.href=backend+href;else a.onclick=e=>{e.preventDefault();alert("Chưa cấu hình máy chủ đăng nhập.")}}}});</script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172746;font:16px/1.55 system-ui,sans-serif}header,main,footer{max-width:1120px;margin:auto;padding:20px 24px}header{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-size:20px;font-weight:850}.brand b{display:inline-grid;place-items:center;background:#294cce;color:white;border-radius:12px;width:40px;height:40px;margin-right:10px}small,.eyebrow{font-weight:750;letter-spacing:.11em;font-size:12px}.hero{position:relative;overflow:hidden;background:#182e83;color:white;border-radius:26px;padding:clamp(24px,6vw,66px);background-image:radial-gradient(circle at 93% 24%,#4967de,transparent 55%)}.hero p{max-width:520px;color:#e1e7ff}.hero h1{font-size:clamp(36px,7vw,68px);line-height:1.03;letter-spacing:-.055em;margin:16px 0}.hero h1 span{color:#a7f1d4}.hero small{color:#a7f1d4}.hero-content{position:relative;z-index:1}.art{position:absolute;right:5%;top:15%;width:30%;max-width:280px;opacity:.7}button{cursor:pointer;border:0;font:inherit;font-weight:750;border-radius:11px;padding:12px 17px;background:#e9eeff;color:#203788}button:hover{filter:brightness(.95)}button:focus-visible,a:focus-visible{outline:3px solid #da7600;outline-offset:3px}button:disabled{cursor:default}.primary{color:white;background:#294cce}.hero button{background:#a7f1d4;color:#13352e;margin-top:12px}.section{margin:35px 0 16px}.section h2{margin:3px 0;font-size:29px}.eyebrow{color:#3653aa}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));gap:15px}.card,#quiz{background:white;border:1px solid #dce4f2;border-radius:18px;padding:20px}.card h3{margin:10px 0 4px}.card p{margin:0 0 14px;color:#485974}.icon{display:inline-block;border-radius:12px;background:#e9eeff;color:#294cce;padding:5px 12px;font-weight:850;font-size:21px}.card button{width:100%;text-align:left}.muted,footer{color:#485974}#quiz{max-width:720px;margin:16px auto}#quiz h2{line-height:1.25}.answers{display:grid;gap:9px;margin:16px 0}.answers button{text-align:left;background:#f0f3fa;color:#172746}.answers .right{background:#cdf5e2;color:#135c42}.answers .wrong{background:#ffe1dd;color:#842a20}progress{width:100%;accent-color:#294cce}.feedback{padding:12px;background:#eff4ff;border-radius:10px;margin:12px 0}.review{padding:0 0 0 23px}.review li{margin-bottom:12px}footer{font-size:14px}@media(max-width:690px){.art{opacity:.18;width:49%;right:-8%}header,main,footer{padding:14px}.hero{border-radius:19px}}
+#period{font:inherit;padding:8px;border:1px solid #bac8e1;border-radius:9px;background:white;color:inherit}.card a,.source-link{color:#294cce}.card h3{overflow-wrap:anywhere}
+.account-button{display:inline-block;padding:8px 12px;border-radius:8px;background:#294cce;color:white;font-weight:750;text-decoration:none}@media(max-width:460px){header{flex-wrap:wrap}} #exam-list .exam-actions{display:grid;gap:10px;margin:12px 0}#exam-list .exam-actions>*{width:100%;min-height:44px;padding:10px 14px;text-align:left}#exam-list .exam-actions>a:last-child{background:#294cce;color:white}#exam-list .card p:empty{display:none}</style>
+<header><div class="brand"><b aria-hidden="true">∑</b>Trạm Toán 6</div><small>ÔN TẬP THCS</small><nav aria-label="Tài khoản lớp học" style="display:flex;gap:8px;flex-wrap:wrap"><a class="account-button" href="./dang-nhap.html">Đăng nhập</a><a class="account-button" href="./lop-hoc.html?mode=register">Đăng ký</a></nav></header>
+<main>
+<div id="home">
+<section class="hero"><svg class="art" viewBox="0 0 260 240" aria-hidden="true"><g fill="none" stroke="#a7f1d4" stroke-width="2"><path d="M24 192h211M42 214V24M57 173L128 48l88 125Z" stroke-dasharray="4 6"/><circle cx="136" cy="119" r="82"/><path d="M59 175h154L133 44Z"/><path d="M133 44v131m-12 0v-12h12"/></g><g fill="#a7f1d4" font-size="19"><text x="127" y="34">A</text><text x="43" y="179">B</text><text x="218" y="179">C</text></g></svg><div class="hero-content"><small>GÓC LUYỆN TẬP · LỚP 6</small><h1>Ôn Toán 6<br><span>theo từng chủ đề</span></h1><p>Chọn một chủ đề để ôn nhanh kiến thức, làm bài trắc nghiệm và xem lời giải từng câu.</p><button id="mixed">Làm bài tổng hợp →</button></div></section>
+<section class="section" id="exams" aria-labelledby="exam-heading">
+<div class="eyebrow">ĐỀ TỪ CÁC TRƯỜNG</div><h2 id="exam-heading">Đề kiểm tra mới theo kỳ</h2>
+<p class="muted">Danh sách kiểm tra nguồn tự động khi mở trang hoặc đổi kỳ. Chọn một đề để luyện dạng toán mà nguồn mô tả, với số liệu mới mỗi lượt.</p>
+<label for="period">Kỳ kiểm tra</label> <select id="period"><option value="giua-hk1">Giữa kỳ I</option><option value="hk1">Cuối kỳ I</option><option value="giua-hk2">Giữa kỳ II</option><option value="hk2">Cuối kỳ II</option></select>
+<p id="exam-status" class="muted" aria-live="polite"></p><div id="exam-list" class="grid"></div></section><div class="section" id="topics"><div class="eyebrow">THƯ VIỆN BÀI TẬP</div><h2>Chọn chủ đề</h2><div id="stats" class="muted"></div></div><div class="grid" id="cards"></div>
+</div>
+<section id="quiz" hidden aria-label="Bài luyện"></section>
+</main><footer>Trạm Toán 6 · Chuyên đề ôn tập Toán THCS</footer>
+<script>
+const topics=[
+['Số tự nhiên','ℕ','Lũy thừa, chia hết, ƯCLN và BCNN.','Dấu hiệu chia hết cho 3: tổng các chữ số chia hết cho 3.',[
+['2³ + 5 bằng bao nhiêu?','13','11','16','21','2³ = 8, nên 2³ + 5 = 13.'],
+['Số nào chia hết cho 3?','234','221','251','100','2 + 3 + 4 = 9 chia hết cho 3.'],
+['ƯCLN(18, 24) bằng bao nhiêu?','6','3','8','12','18 = 2 × 3² và 24 = 2³ × 3, nên ƯCLN là 2 × 3 = 6.'],
+['BCNN(8, 12) bằng bao nhiêu?','24','12','16','48','8 = 2³ và 12 = 2² × 3, nên BCNN là 2³ × 3 = 24.']]],
+['Số nguyên','ℤ','So sánh và tính toán với số âm.','Cộng hai số nguyên khác dấu: lấy giá trị tuyệt đối lớn trừ giá trị tuyệt đối nhỏ, rồi giữ dấu của số có giá trị tuyệt đối lớn hơn.',[
+['−7 + 12 bằng bao nhiêu?','5','−5','19','−19','12 lớn hơn 7, nên kết quả là 12 − 7 = 5.'],
+['Số nào nhỏ nhất?','−9','−2','0','4','Trong hai số âm, số có giá trị tuyệt đối lớn hơn thì nhỏ hơn.'],
+['(−6) × (−4) bằng bao nhiêu?','24','−24','10','−10','Hai số âm nhân với nhau cho kết quả dương.'],
+['Nhiệt độ từ −3°C tăng thêm 8°C. Nhiệt độ mới là bao nhiêu?','5°C','−11°C','−5°C','11°C','Ta tính −3 + 8 = 5.']]],
+['Phân số','½','Rút gọn, quy đồng và tính với phân số.','Muốn cộng hai phân số khác mẫu, hãy quy đồng mẫu rồi cộng hai tử số.',[
+['1/3 + 1/6 bằng bao nhiêu?','1/2','2/9','1/9','2/3','Đổi 1/3 thành 2/6. Tổng là 3/6 = 1/2.'],
+['Rút gọn 18/24 đến tối giản.','3/4','2/3','4/5','9/12','Chia cả tử và mẫu cho ƯCLN(18, 24) = 6.'],
+['2/5 của 30 bằng bao nhiêu?','12','15','6','18','30 × 2/5 = 12.'],
+['3/4 ÷ 1/2 bằng bao nhiêu?','3/2','3/8','2/3','1/2','Nhân 3/4 với nghịch đảo của 1/2, tức là 2.']]],
+['Số thập phân và phần trăm','%','Đổi đơn vị và giải bài toán phần trăm.','p% của một số bằng số đó nhân với p rồi chia cho 100.',[
+['0,35 bằng bao nhiêu phần trăm?','35%','3,5%','0,35%','350%','0,35 = 35/100 = 35%.'],
+['2,4 × 0,5 bằng bao nhiêu?','1,2','12','0,12','2,9','Nhân với 0,5 tức là lấy một nửa.'],
+['Áo giá 200.000 đồng, giảm 15%. Giá mới là bao nhiêu?','170.000 đồng','185.000 đồng','30.000 đồng','230.000 đồng','Tiền giảm là 30.000 đồng. Lấy 200.000 − 30.000 = 170.000 đồng.'],
+['1,75 m bằng bao nhiêu xăng-ti-mét?','175 cm','17,5 cm','1.750 cm','0,175 cm','1 m = 100 cm, nên 1,75 m = 175 cm.']]],
+['Hình học','△','Chu vi, diện tích, góc và đối xứng.','Diện tích tam giác bằng độ dài đáy nhân chiều cao tương ứng rồi chia cho 2.',[
+['Hình chữ nhật dài 9 cm, rộng 4 cm có chu vi bao nhiêu?','26 cm','36 cm','13 cm','18 cm','Chu vi bằng 2 × (9 + 4) = 26 cm.'],
+['Tam giác có đáy 8 cm, chiều cao 5 cm. Diện tích là bao nhiêu?','20 cm²','40 cm²','13 cm²','26 cm²','Diện tích là 8 × 5 ÷ 2 = 20 cm².'],
+['Góc 120° thuộc loại góc nào?','Góc tù','Góc nhọn','Góc vuông','Góc bẹt','Góc tù lớn hơn 90° và nhỏ hơn 180°.'],
+['Hình vuông có bao nhiêu trục đối xứng?','4','2','1','8','Hai đường chéo và hai đường qua trung điểm các cặp cạnh đối diện là bốn trục đối xứng.']]],
+['Thống kê và xác suất','▥','Đọc dữ liệu và tính xác suất thực nghiệm.','Xác suất thực nghiệm bằng số lần sự kiện xảy ra chia cho tổng số lần thử.',[
+['Ba tổ thu được lần lượt 7, 9 và 12 kg giấy. Cả ba tổ thu được bao nhiêu?','28 kg','21 kg','19 kg','30 kg','Cộng số giấy của ba tổ: 7 + 9 + 12 = 28 kg.'],
+['Tung đồng xu 20 lần, có 8 lần mặt sấp. Xác suất thực nghiệm của mặt sấp là bao nhiêu?','2/5','3/5','1/2','1/5','Số lần mặt sấp chia tổng số lần tung là 8/20 = 2/5.'],
+['Dãy số 2, 5, 2, 7, 2, 5 có bao nhiêu số 2?','3','2','4','5','Số 2 xuất hiện ở vị trí thứ nhất, thứ ba và thứ năm.'],
+['Trong 30 lần gieo xúc xắc, mặt 6 xuất hiện 5 lần. Tỉ số tương ứng là bao nhiêu?','1/6','1/5','1/30','5/6','Lấy 5 chia cho 30, rồi rút gọn thành 1/6.']]]
+];
+const get=id=>document.getElementById(id);
+const quiz=get('quiz'), home=get('home');
+let saved={}, current, questions, index, answers;
+try{saved=JSON.parse(localStorage.getItem('tram-toan-6')||'{}')||{}}catch{}
+function shuffle(items){
+ const result=[...items];
+ for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]]}
+ return result;
+}
+function showHome(){
+ quiz.hidden=true;home.hidden=false;
+ const done=topics.filter((_,i)=>saved[i]!==undefined).length;
+ get('stats').textContent='6 chủ đề · 24 câu hỏi · Đã luyện '+done+'/6 chủ đề';
+ get('cards').innerHTML=topics.map(([name,icon,desc],i)=>'<article class="card"><span class="icon" aria-hidden="true">'+icon+'</span><h3>'+name+'</h3><p>'+desc+'</p><button data-topic="'+i+'">'+(saved[i]===undefined?'Luyện tập →':'Luyện lại · Điểm tốt nhất '+saved[i]+'/4 →')+'</button></article>').join('');
+}
+function start(id){
+ current=id;index=0;answers=[];
+ questions=id===-2?generate(sourcePractice.ids):id===-1?shuffle(topics.flatMap(topic=>shuffle(topic[4]).slice(0,2))):shuffle(topics[id][4]);
+ home.hidden=true;quiz.hidden=false;renderQuestion();window.scrollTo(0,0);
+}
+function focusHeading(){quiz.querySelector('h2').focus()}
+function frame(content){quiz.innerHTML='<button id="back">← Chủ đề</button>'+content;get('back').onclick=()=>{showHome();get('topics').scrollIntoView();get('cards').querySelector('button').focus({preventScroll:true})}}
+function renderQuestion(){
+ const [question,correct,...rest]=questions[index];
+ const options=shuffle([correct,...rest.slice(0,3)]);
+ const title=current===-2?'Luyện theo dạng đề':current===-1?'Bài tổng hợp':topics[current][0];
+ frame('<p class="eyebrow">'+title+' · Câu '+(index+1)+'/'+questions.length+'</p><progress aria-label="Tiến độ làm bài" value="'+index+'" max="'+questions.length+'"></progress><h2 tabindex="-1">'+question+'</h2>'+(current===-2?'<p class="muted">Dạng nhận diện: '+sourcePractice.ids.map(id=>bank[id][0]).join(', ')+'. <a class="source-link" href="'+sourcePractice.link+'" target="_blank" rel="noopener noreferrer">Đề tham chiếu ↗</a></p>':current===-1?'':'<details><summary>Ôn nhanh kiến thức</summary><p>'+topics[current][3]+'</p></details>')+'<div class="answers">'+options.map((option,i)=>'<button data-answer="'+i+'">'+String.fromCharCode(65+i)+'. '+option+'</button>').join('')+'</div><div id="reply" aria-live="polite"></div><button id="next" class="primary" hidden>'+(index+1===questions.length?'Xem kết quả':'Câu tiếp theo →')+'</button>');
+ const buttons=[...quiz.querySelectorAll('[data-answer]')];
+ buttons.forEach((button,i)=>button.onclick=()=>{
+   const chosen=options[i];
+   answers.push(chosen);
+   buttons.forEach((item,j)=>{item.disabled=true;if(options[j]===correct)item.classList.add('right');else if(i===j)item.classList.add('wrong')});
+   get('reply').innerHTML='<div class="feedback"><strong>'+(chosen===correct?'Chính xác!':'Đáp án đúng là '+correct+'.')+'</strong> '+rest[3]+'</div>';
+   quiz.querySelector('progress').value=index+1;
+   get('next').hidden=false;get('next').focus();
+ });
+ get('next').onclick=()=>{index++;if(index===questions.length)finish();else renderQuestion()};
+ focusHeading();
+}
+function finish(){
+ const score=questions.filter((q,i)=>q[1]===answers[i]).length;
+ if(current>=0){saved[current]=Math.max(score,saved[current]??0);try{localStorage.setItem('tram-toan-6',JSON.stringify(saved))}catch{}}
+ const review=questions.map(([q,correct,a,b,c,explanation],i)=>answers[i]===correct?'':'<li><b>'+q+'</b><br>Bạn chọn '+answers[i]+'. Đáp án đúng là '+correct+'. '+explanation+'</li>').join('');
+ frame('<p class="eyebrow">HOÀN THÀNH</p><h2 tabindex="-1">Bạn làm đúng '+score+'/'+questions.length+' câu</h2>'+(review?'<h3>Xem lại câu sai</h3><ol class="review">'+review+'</ol>':'<p>Bạn đã trả lời đúng tất cả các câu.</p>')+'<button class="primary" id="again">Làm lại →</button>');
+ get('again').onclick=()=>start(current);focusHeading();window.scrollTo(0,0);
+}
+get('mixed').onclick=()=>start(-1);
+get('cards').onclick=event=>{const button=event.target.closest('[data-topic]');if(button)start(Number(button.dataset.topic))};
+showHome();
+const bank = {
+  gcd: ['Ước chung lớn nhất', (a,b) => ['Có '+(6*a)+' quyển vở và '+(6*b)+' bút. Chia đều cả hai loại vào nhiều nhất bao nhiêu phần quà?', '6', '3', '2', '12', 'Số phần quà tối đa là ƯCLN('+6*a+', '+6*b+') = 6, vì '+a+' và '+b+' nguyên tố cùng nhau.']],
+  lcm: ['Bội chung nhỏ nhất', (a,b) => ['Hai đèn chớp lần lượt mỗi '+2*a+' và '+2*b+' giây. Cùng chớp lúc đầu, sau ít nhất bao nhiêu giây lại cùng chớp?', String(2*a*b), String(a*b), String(2*(a+b)), String(4*a*b), 'Tìm BCNN('+2*a+', '+2*b+') = '+2*a*b+' giây.']],
+  area: ['Diện tích hình chữ nhật', (a,b) => ['Một khu vườn hình chữ nhật dài '+(a+10)+' m, rộng '+b+' m. Diện tích là bao nhiêu?', (a+10)*b+' m²', (a+10+b)+' m²', 2*(a+10+b)+' m²', (a+10)*(b+1)+' m²', 'Diện tích bằng chiều dài nhân chiều rộng: '+(a+10)+' × '+b+' = '+(a+10)*b+' m².']],
+  percent: ['Tỉ số phần trăm', (a,b) => ['Một sản phẩm giá '+a*100000+' đồng được giảm '+b*5+'%. Số tiền được giảm là bao nhiêu?', String(a*b*5000), String(a*b*1000), String(a*100000-a*b*5000), String(a*b*10000), 'Tiền giảm bằng '+a*100000+' × '+b*5+' ÷ 100 = '+a*b*5000+' đồng.']],
+  probability: ['Xác suất thực nghiệm', (a,b) => ['Trong '+(a+b)+' lần thử, sự kiện A xảy ra '+a+' lần. Xác suất thực nghiệm của A là bao nhiêu?', a+'/'+(a+b), b+'/'+(a+b), a+'/'+b, '1/'+(a+b), 'Chia số lần A xảy ra cho tổng số lần thử: '+a+'/'+(a+b)+'.']],
+  fraction: ['Cộng phân số', (a,b) => ['1/'+a+' + 1/'+b+' bằng bao nhiêu?', (a+b)+'/'+a*b, '2/'+(a+b), '1/'+a*b, '2/'+a*b, 'Quy đồng mẫu '+a*b+', rồi cộng hai tử số '+b+' + '+a+'.']]
+};
+let sourcePractice;
+function generate(ids){
+ return shuffle(ids.flatMap(id=>shuffle([[3,7],[4,9],[5,8],[7,11]]).slice(0,3).map(([a,b])=>bank[id][1](a,b))));
+}
+const exams = get('exam-list'), examStatus = get('exam-status');
+let requestNumber=0;
+async function loadExams(){
+ const request=++requestNumber;
+ exams.replaceChildren();
+ examStatus.textContent='Đang kiểm tra nguồn…';
+ try{
+   const response=await fetch('/api/exams?period='+get('period').value);
+   if(!response.ok)throw new Error();
+   const {items,checkedAt}=await response.json();
+   if(request!==requestNumber)return;
+   examStatus.textContent='Kiểm tra nguồn lúc '+new Date(checkedAt).toLocaleString('vi-VN',{timeZone:'Asia/Bangkok'})+' (giờ Việt Nam).';
+   const history=await fetch("/api/class/original/history").then(r=>r.ok?r.json():null).catch(()=>null);
+   if(request!==requestNumber)return;
+   for(const item of items){
+     const card=document.createElement('article');card.className='card';
+     const title=document.createElement('h3');title.textContent=item.title;
+     const link=document.createElement('a');link.href='https://thcs.toanmath.com'+item.path;link.textContent='Xem đề gốc ↗';link.target='_blank';link.rel='noopener noreferrer';
+     const status=document.createElement('p');status.setAttribute('aria-live','polite');
+     const button=document.createElement('button');button.textContent='Luyện dạng tương tự →';
+     button.onclick=async()=>{
+       button.disabled=true;status.textContent='Đang đọc mô tả đề…';
+       try{
+         const response=await fetch('/api/patterns?path='+encodeURIComponent(item.path));
+         if(!response.ok)throw new Error();
+         const {patterns}=await response.json();
+         const ids=patterns.filter(id=>Object.hasOwn(bank,id));
+         if(!ids.length){status.textContent='Chưa nhận diện được dạng hỗ trợ từ mô tả. Bạn có thể xem đề gốc ở trên.';return}
+         sourcePractice={ids,link:link.href};
+         status.textContent='';start(-2);
+       }catch{status.textContent='Chưa đọc được nguồn đề. Hãy thử lại.'}
+       finally{button.disabled=false}
+     };
+     const original=document.createElement('a');original.href='/lop-hoc?original='+encodeURIComponent(item.path);original.textContent='Làm đề gốc →';
+     const past=history?.attempts.filter(a=>a.path===item.path)||[];
+     const record=document.createElement('details');const summary=document.createElement('summary');summary.textContent=past.length?'Lịch sử điểm · '+(past[0].total?past[0].score+'/'+past[0].total:'Đã nộp')+' · '+past.length+' lượt':'Chưa làm';record.append(summary);
+     past.forEach(attempt=>{const line=document.createElement('p');line.textContent=(attempt.total?attempt.score+'/'+attempt.total+' câu tự chấm':'Đã nộp · Chưa có điểm tự chấm')+' · '+new Date(attempt.created.replace(' ','T')+'Z').toLocaleDateString('vi-VN',{timeZone:'Asia/Bangkok'});record.append(line)});
+     const actions=document.createElement('div');actions.className='exam-actions';actions.append(link,button,original);card.append(title,actions,status,record);exams.append(card);
+   }
+ }catch{
+   if(request!==requestNumber)return;
+   examStatus.textContent='Chưa tải được danh sách đề. ';
+   const retry=document.createElement('button');retry.textContent='Thử lại';retry.onclick=loadExams;examStatus.append(retry);
+ }
+}
+get('period').onchange=loadExams;
+if(location.protocol==='file:')examStatus.textContent='Mở bản trực tuyến để tải đề mới.';else loadExams();
+</script><style>
+a{ text-decoration:none }
+main a,header a,.site-menu a{display:inline-flex;align-items:center;padding:8px 12px;border-radius:9px;background:#e8eeff;color:#203788;font-weight:750;text-decoration:none}
+header a:hover,main a:hover,.site-menu a:hover{filter:brightness(.94)}
+.site-menu a{display:block;margin-top:5px}
+#notice:empty{display:none}
+body{padding-bottom:calc(68px + env(safe-area-inset-bottom))}.tabbar{position:fixed;inset:auto 0 0;z-index:20;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:4px max(4px,calc((100vw - 740px)/2)) env(safe-area-inset-bottom);background:#f8faff;border-top:1px solid #dce4f2;box-shadow:0 -3px 16px #17274612}.tabbar a,.tabbar button{display:grid;justify-items:center;align-content:center;gap:1px;min-height:57px;min-width:0;width:auto;padding:2px;text-decoration:none;background:none;color:#415374;border:0;font:750 12px system-ui;text-align:center}.tabbar a[aria-current]{color:#1c42b9;background:#e8eeff;border-radius:10px}.tabbar span{font-size:19px;line-height:1.3}.site-menu{border:1px solid #dce4f2;border-radius:18px;max-width:min(90vw,350px);width:100%;padding:19px;color:#172746}.site-menu::backdrop{background:#17274672}.site-menu a{display:block;padding:10px;color:#203788;text-decoration:none}.site-menu h2{margin:4px 0}.site-menu button{margin-top:8px}
+</style>
+<nav class="tabbar" aria-label="Điều hướng chính">
+<a href="./index.html"><span aria-hidden="true">🏠</span>Trang chủ</a>
+<a href="./index.html#topics"><span aria-hidden="true">📖</span>Học bài</a>
+<a href="./lop-hoc.html#messages"><span aria-hidden="true">💬</span>Nhắn tin</a>
+<a href="./index.html#exams"><span aria-hidden="true">⏱️</span>Thi thử</a>
+<button type="button" id="show-site-menu" aria-haspopup="dialog"><span aria-hidden="true">☰</span>Menu</button>
+</nav>
+<dialog class="site-menu" id="site-menu" aria-labelledby="site-menu-title">
+<h2 id="site-menu-title">Menu</h2>
+<a href="./lop-hoc.html">Lớp học</a>
+<a href="./lop-hoc.html#online-exams">Đề online</a>
+<a href="./lop-hoc.html#assignments">Đề được giao</a>
+<a href="./lop-hoc.html#scores">Lịch sử điểm</a>
+<a href="./lop-hoc.html#messages">Nhắn tin</a>
+<a href="./lop-hoc.html?mode=register">Đăng ký học sinh</a>
+<form method="dialog"><button>Đóng menu</button></form>
+</dialog>
+<script>
+{
+ const menu=document.getElementById('site-menu');
+ const items=document.querySelectorAll('.tabbar a');
+ document.getElementById('show-site-menu').onclick=()=>menu.showModal();
+ menu.querySelectorAll('a').forEach(item=>item.onclick=()=>menu.close());
+ function updateTabs(){
+   const route=location.pathname+location.hash;
+   items.forEach(item=>{
+     if(item.getAttribute('href')===route)item.setAttribute('aria-current','location');
+     else item.removeAttribute('aria-current');
+   });
+   if(location.pathname.endsWith('/')||location.pathname.endsWith('/index.html')&&location.hash&&document.getElementById('home')?.hidden){
+     showHome();
+     document.getElementById(location.hash.slice(1))?.scrollIntoView();
+   }
+ }
+ window.addEventListener('hashchange',updateTabs);
+ updateTabs();
+}
+</script>
+
+
+</html>

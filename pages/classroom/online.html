@@ -1,0 +1,218 @@
+<script>
+function importExamText(source){
+ const text=source.normalize('NFC').replace(/\r/g,'').replace(/\u00a0/g,' ');
+ const marker=/^\s*(?:[\p{L}\d -]{0,25}\s)?(?:ĐÁP ÁN(?:\s+VÀ\s+(?:HƯỚNG DẪN CHẤM|THANG ĐIỂM))?|HƯỚNG DẪN CHẤM)\s*[:.]?\s*$/imu;
+ const header=text.search(/^.*\bHDC\s+ĐỀ[^\n]*$/imu);
+ const split=header>=0?header:text.search(marker);
+ let paper=split<0?text:text.slice(0,split);
+ paper=paper.replace(/(Câu\s+)(\d)\s+(\d)(?=\s*[.:])/giu,'$'+'1'+'$'+'2'+'$'+'3');
+ let key=split<0?'':text.slice(split);
+ const variants=[...paper.matchAll(/^\s*(?:MÃ\s+)?ĐỀ\s+(\d{2,5})\s*$/gimu)];
+ if(variants.length){
+   const id=variants[0][1];
+   if(variants[1])paper=paper.slice(0,variants[1].index);
+   const tables=[...key.matchAll(/^\s*(?:MÃ\s+)?ĐỀ\s+(\d{2,5})\s*$/gimu)];
+   const idx=tables.findIndex(table=>table[1]===id);
+   if(idx>=0)key=key.slice(tables[idx].index,tables[idx+1]?.index);
+ }
+ const answers=new Map();
+ for(const [,number,answer] of key.matchAll(/(?:^|[\s;])(?:Câu\s+)?(\d{1,2})\s*[.):-]\s*([A-D](?=\s|$)|[−-]?\d+(?:[.,/]\d+)?)(?=\s|;|$)/gimu))answers.set(Number(number),answer.toUpperCase());
+ const rows=key.split('\n').map(line=>line.trim().split(/\s+|\|/).filter(Boolean));
+ rows.forEach((row,i)=>{
+   if(!/^câu$/i.test(row[0]||''))return;
+   const numbers=row.slice(1);
+   const options=rows[i+1]?.filter(value=>/^[A-D]$/i.test(value));
+   if(numbers.length&&numbers.every(n=>/^\d{1,2}$/.test(n))&&options?.length===numbers.length)numbers.forEach((n,j)=>answers.set(Number(n),options[j].toUpperCase()));
+ });
+ const blocks=Array.from(paper.matchAll(/^\s*(Câu|Bài)\s+(\d{1,2})\s*[.:)\-]\s*([\s\S]*?)(?=^\s*(?:Câu|Bài)\s+\d{1,2}\s*[.:)\-]|$\s*(?![\s\S]))/gimu));
+ return blocks.slice(0,40).map(([,label,number,block])=>{
+   const answer=label.toLowerCase()==='câu'&&!/^\(\s*\d+(?:[.,]\d+)?\s*điểm/i.test(block)?answers.get(Number(number))||'':'';
+   const matches=Array.from(block.matchAll(/(?:^|\s)([A-D])\s*[.)]\s+/gm));
+   if(matches.map(m=>m[1]).join('')==='ABCD'){
+     const options=matches.map((m,i)=>block.slice(m.index+m[0].length,matches[i+1]?.index).trim());
+     return {type:'choice',prompt:block.slice(0,matches[0].index).trim(),options,answer:/^[A-D]$/.test(answer)?answer:''};
+   }
+   return {type:answer&&!/^[A-D]$/.test(answer)?'short':'image',prompt:block.trim(),answer:/^[A-D]$/.test(answer)?'':answer};
+ });
+}
+async function examFileText(file){
+ if(file.size>12000000)throw new Error('Tệp tối đa 12 MB.');
+ if(!file.name.toLowerCase().endsWith('.pdf'))return file.text();
+ const base='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/legacy/build/';
+ const pdfjs=await import(base+'pdf.mjs');
+ pdfjs.GlobalWorkerOptions.workerSrc=base+'pdf.worker.mjs';
+ const document=await pdfjs.getDocument({data:await file.arrayBuffer(),isEvalSupported:false}).promise;
+ try{
+   if(document.numPages>35)throw new Error('PDF tối đa 35 trang.');
+   const pages=[];
+   for(let i=1;i<=document.numPages;i++){
+     const page=await document.getPage(i);
+     const {items}=await page.getTextContent();
+     let line='',y,lines=[];
+     for(const item of items){
+       if(typeof item.str!=='string')continue;
+       const next=item.transform[5];
+       if(line&&Math.abs(next-y)>3){lines.push(line);line=''}
+       line+=(line?' ':'')+item.str;y=next;
+       if(item.hasEOL){lines.push(line);line=''}
+     }
+     if(line)lines.push(line);
+     pages.push(lines.join('\n'));
+   }
+   return pages.join('\n');
+ }finally{await document.destroy()}
+}
+function examTextarea(value,max){
+ const input=make('textarea');input.value=value||'';input.maxLength=max;input.rows=3;return input;
+}
+function examEditor(parent){
+ const box=make('div');parent.append(box);
+ const upload=make('input');upload.type='file';upload.accept='.pdf,.txt';
+ field(box,'Tải đề PDF hoặc TXT',upload);
+ const source=field(box,'Nội dung đề ToanMath',examTextarea('',150000));
+ source.placeholder='Câu 1. …\nA. …  B. …  C. …  D. …\nĐÁP ÁN\n1. B';
+ upload.onchange=()=>run(upload,async()=>{
+   if(!upload.files[0])return;
+   source.value=await examFileText(upload.files[0]);
+   if(!source.value.trim())throw new Error('PDF không có lớp chữ. Hãy dán nội dung hoặc nhập câu thủ công.');
+ });
+ const edit=make('div');
+ const rows=[];
+ function add(data={}){
+   if(rows.length>=40)throw new Error('Một đề có tối đa 40 câu.');
+   const group=make('fieldset');group.append(make('legend','Câu '+(rows.length+1)));
+   const type=field(group,'Loại câu',select([['choice','Trắc nghiệm A–D'],['short','Điền đáp án'],['image','Nộp ảnh tự luận']]));
+   type.value=data.type||'choice';
+   const prompt=field(group,'Nội dung',examTextarea(data.prompt,2500));
+   const extra=make('div');group.append(extra);
+   const options=['A','B','C','D'].map((letter,i)=>{
+     const el=input('text');el.required=false;el.maxLength=600;el.value=data.options?.[i]||'';field(extra,letter,el);return el;
+   });
+   const answer=input('text');answer.required=false;answer.maxLength=150;answer.value=data.answer||'';
+   const answerWrap=make('div');field(answerWrap,'Đáp án',answer);group.append(answerWrap);
+   function sync(){extra.hidden=type.value!=='choice';answerWrap.hidden=type.value==='image';answer.placeholder=type.value==='choice'?'A, B, C hoặc D':'Ví dụ 3/4'}
+   type.onchange=sync;sync();
+   const row={group,type,prompt,options,answer};
+   group.append(button('Bỏ câu này',async()=>{rows.splice(rows.indexOf(row),1);group.remove();rows.forEach((q,i)=>q.group.firstChild.textContent='Câu '+(i+1))}));
+   rows.push(row);edit.append(group);
+ }
+ box.append(button('Nhận diện câu hỏi',async()=>{
+   const parsed=importExamText(source.value);
+   if(!parsed.length)throw new Error('Chưa thấy dòng “Câu 1.” hoặc “Bài 1.”. Hãy chỉnh nội dung hoặc thêm câu thủ công.');
+   rows.splice(0);edit.replaceChildren();parsed.forEach(add);
+   notice.textContent='Đã nhận diện '+parsed.length+' câu. Hãy kiểm tra loại câu, công thức và đáp án trước khi lưu.';
+ }),button('Thêm câu',async()=>add()),edit);
+ const save=formIn(parent,'Lưu đề online',async()=>{
+   const questions=rows.map(q=>({type:q.type.value,prompt:q.prompt.value,options:q.options.map(o=>o.value),answer:q.type.value==='choice'?q.answer.value.trim().toUpperCase():q.answer.value}));
+   await api('/online/create',{title:title.value,questions});
+   await render();notice.textContent='Đã lưu đề. Chọn học sinh và bấm Giao đề online.';
+ });
+ const title=field(save.form,'Tên đề',input('text'));title.maxLength=120;save.form.append(save.submit);
+}
+async function renderOnline(){
+ const data=await api('/online/list'+(state.user.teacher&&student?'?student='+encodeURIComponent(student):''));
+ const box=section(state.user.teacher?'Kho đề online':'Đề online được giao');box.id='online-exams';
+ if(state.user.teacher){
+   const editor=make('details');editor.append(make('summary','Tải đề và tạo đề online'));box.append(editor);
+   examEditor(editor);
+   if(student&&data.exams.length){
+     const assign=formIn(box,'Giao đề online',async()=>{await api('/online/assign',{student,exam:pick.value});await render()});
+     const pick=field(assign.form,'Đề đã lưu',select(data.exams.map(e=>[e.id,e.title])));assign.form.append(assign.submit);
+   }
+ }
+ for(const row of data.assignments){
+   const item=make('p',row.title+' · '+(row.auto_score===null?'Chưa nộp':row.manual_score===null?'Chờ chấm ảnh':(row.auto_score+row.manual_score)+' điểm'));
+   if(!state.user.teacher||row.auto_score!==null)item.append(' ',button(row.auto_score===null?'Làm bài':'Xem bài nộp',()=>openOnline(row.id)));
+   box.append(item);
+ }
+ if(!data.assignments.length)box.append(make('p','Chưa có đề online được giao.'));
+}
+async function compressExamImage(file){
+ if(!file||!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size>12000000)throw new Error('Chọn ảnh JPG, PNG hoặc WebP tối đa 12 MB.');
+ const bitmap=await createImageBitmap(file);
+ try{
+   const canvas=make('canvas');const ctx=canvas.getContext('2d');
+   for(const size of [1500,1200,900,650]){
+     const scale=Math.min(1,size/Math.max(bitmap.width,bitmap.height));
+     canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+     ctx.fillStyle='white';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+     const data=canvas.toDataURL('image/jpeg',.76);
+     if(data.length<=230000)return data;
+   }
+   throw new Error('Ảnh quá lớn. Hãy cắt sát vùng bài làm rồi thử lại.');
+ }finally{bitmap.close()}
+}
+async function openOnline(id,original){
+ const paper=original||await api('/online/paper?id='+encodeURIComponent(id)+(state.user.teacher?'&student='+encodeURIComponent(student):''));
+ app.replaceChildren();
+ const panel=section(paper.title);panel.append(paper.originalPath?link('← Danh sách đề','/#exams'):button('← Về lớp học',render));if(paper.article){
+   panel.append(' ',paper.article);
+   const reference=make('details');reference.append(make('summary','Xem PDF gốc để đối chiếu hình và công thức'));
+   const frame=make('iframe');frame.title='Đề gốc ToanMath';frame.loading='lazy';frame.src='/api/original-pdf?path='+encodeURIComponent(paper.originalPath);frame.style.cssText='width:100%;height:55vh;border:0';reference.append(frame);panel.append(reference);
+ }
+ const answers=Array(paper.questions.length).fill('');
+ const refs=[];
+ let pendingPhotos=0;
+ const progress=make('p');progress.setAttribute('aria-live','polite');
+ const navigator=make('nav');navigator.className='question-nav';navigator.setAttribute('aria-label','Danh sách câu hỏi');
+ panel.append(progress,navigator);
+ const update=()=>{
+   progress.textContent='Đã làm '+answers.filter(Boolean).length+'/'+answers.length+' câu';
+   refs.forEach((ref,i)=>{ref.classList.toggle('done',!!answers[i]);ref.setAttribute('aria-label','Câu '+(i+1)+(answers[i]?', đã làm':', chưa làm'))});
+ };
+ paper.questions.forEach((q,i)=>{
+   const group=make('fieldset');group.tabIndex=-1;group.append(make('legend','Câu '+(i+1)),make('p',q.prompt));
+   const jump=button(String(i+1),async()=>{group.focus({preventScroll:true});group.scrollIntoView({block:'start'})});
+   navigator.append(jump);refs.push(jump);
+   if(paper.submission){
+     const value=paper.submission.answers[i];answers[i]=value;
+     if(q.type==='image'&&value){const img=make('img');img.src=value;img.alt='Bài làm câu '+(i+1);img.loading='lazy';group.append(img)}
+     else group.append(make('p','Bài làm: '+(value||'Bỏ trống')));
+     if(q.answer)group.append(make('p','Đáp án: '+q.answer));
+   }else if(q.type==='choice'){
+     q.options.forEach((value,j)=>{
+       const choice=input('radio');choice.required=false;choice.name='exam-'+i;
+       const letter='ABCD'[j];choice.onchange=()=>{answers[i]=letter;update()};
+       field(group,letter+'. '+value,choice);
+     });
+   }else if(q.type==='short'){
+     const answer=input('text');answer.maxLength=150;answer.required=false;field(group,'Đáp án',answer);
+     answer.oninput=()=>{answers[i]=answer.value.trim();update()};
+   }else{
+     const photo=make('input');photo.type='file';photo.accept='image/jpeg,image/png,image/webp';
+     const status=make('p');status.setAttribute('aria-live','polite');
+     field(group,'Ảnh bài làm',photo);group.append(status);
+     photo.onchange=async()=>{
+       photo.disabled=true;pendingPhotos++;
+       try{answers[i]=photo.files[0]?await compressExamImage(photo.files[0]):'';status.textContent=answers[i]?'Đã đính kèm ảnh.':''}
+       catch(error){answers[i]='';photo.value='';status.textContent=error.message}
+       finally{pendingPhotos--;photo.disabled=false;update()}
+     };
+   }
+   panel.append(group);
+ });
+ update();
+ if(paper.submission){
+   const result=paper.submission;
+   panel.append(make('p',paper.originalPath?(result.total?'Điểm tự luyện: '+result.auto_score+'/'+result.total+' câu có đáp án nhận diện được.':'Đã lưu lượt làm. PDF này chưa nhận diện được đáp án để chấm.'):'Điểm tự động: '+result.auto_score+' · Điểm tự luận: '+(result.manual_score??'Chờ chấm')));
+   const imageCount=paper.questions.filter(q=>q.type==='image').length;
+   if(state.user.teacher&&imageCount){
+     const grade=formIn(panel,'Lưu điểm tự luận',async()=>{await api('/online/grade',{id,student,score:Number(score.value)});await openOnline(id)});
+     const score=field(grade.form,'Điểm tự luận (tối đa '+imageCount+')',input('number'));
+     score.min=0;score.max=imageCount;score.step='0.25';score.value=result.manual_score??'';grade.form.append(grade.submit);
+   }
+ }else{
+   panel.append(button('Nộp bài',async()=>{
+     if(pendingPhotos)throw new Error('Hãy đợi ảnh xử lý xong.');
+     if(!answers.some(Boolean))throw new Error('Hãy làm ít nhất một câu trước khi nộp.');
+     if(!answers.every(Boolean)&&!window.confirm('Còn câu bỏ trống. Bạn muốn nộp bài?'))return;
+     if(paper.originalPath){
+       const result=await saveOriginal(paper,answers);
+       await openOnline(null,{...paper,submission:result});
+     }else{await api('/online/submit',{id,answers});await openOnline(id)}
+   }));
+ }
+ panel.scrollIntoView();
+}
+</script>
+

@@ -1,0 +1,28 @@
+<script>
+async function startOriginal(path){
+ const panel=section('Đang chuẩn bị đề gốc');
+ const url='/api/original-pdf?path='+encodeURIComponent(path);
+ const article=link('Xem đề trên ToanMath ↗','https://thcs.toanmath.com'+path);
+ article.target='_blank';article.rel='noopener noreferrer';
+ panel.append(article);
+ try{
+   const response=await fetch(url);
+   if(!response.ok)throw new Error('Chưa lấy được PDF của đề này.');
+   const file=new File([await response.blob()],'de-goc.pdf',{type:'application/pdf'});
+   const questions=importExamText(await examFileText(file));
+   if(!questions.length)throw new Error('PDF này chưa tách được câu hỏi. Bạn có thể mở đề gốc trên ToanMath.');
+   await openOnline(null,{title:'Làm đề gốc ToanMath',questions,submission:null,originalPath:path,article});
+ }catch(error){panel.append(make('p',error.message))}
+}
+async function saveOriginal(paper,answers){
+ const keys=paper.questions.map(q=>q.type==='image'?'':q.answer||'');
+ const normalize=value=>value.trim().normalize('NFC').toLocaleLowerCase('vi').replace(/\s+/g,'').replace(/,/g,'.').replace(/−/g,'-');
+ const total=keys.filter(Boolean).length;
+ const score=keys.filter((key,i)=>key&&normalize(key)===normalize(answers[i])).length;
+ const evidence=paper.questions.flatMap((q,i)=>keys[i]?[{prompt:q.prompt.slice(0,2500),type:q.type,correct:normalize(keys[i])===normalize(answers[i])}]:[]);
+ await api('/original/history',{path:paper.originalPath,score,total,answers,evidence});
+ return {answers,auto_score:score,manual_score:null,total};
+}
+
+</script>
+
