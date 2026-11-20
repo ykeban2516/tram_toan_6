@@ -9,7 +9,7 @@ GOOGLE_CLIENT_ID = "235089067265-57fi684j39r4pve3m24ehdk4rc0e3hcg.apps.googleuse
 [[d1_databases]]
 binding = "DB"
 database_name = "tram-toan-6"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "dc5c1f63-f329-4b4a-867f-de3149faa9d0"
 migrations_dir = "database/migrations"
 
 
