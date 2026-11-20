@@ -3,7 +3,8 @@ main = "dist/index.js"
 compatibility_date = "2026-11-11"
 
 [vars]
-TEACHER_EMAILS = "sieueban@gmail.com,ykhanheban88@gmail.com"
+TEACHER_EMAILS = "Sieueban@gmail.com,ykhanheban88@gmail.com"
+GOOGLE_CLIENT_ID = "235089067265-57fi684j39r4pve3m24ehdk4rc0e3hcg.apps.googleusercontent.com"
 
 [[d1_databases]]
 binding = "DB"
